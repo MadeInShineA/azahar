@@ -3975,7 +3975,9 @@ void GMainWindow::mouseReleaseEvent([[maybe_unused]] QMouseEvent* event) {
 
 void GMainWindow::showEvent([[maybe_unused]] QShowEvent* event) {
     game_list->LoadCompatibilityList();
-    game_list->PopulateAsync(UISettings::values.game_dirs);
+    // Defer the scan until the event loop runs. The constructor calls UpdateUITheme() right
+    // after show(), which changes the icon theme while the worker thread would be loading icons.
+    QTimer::singleShot(0, this, [this] { game_list->PopulateAsync(UISettings::values.game_dirs); });
 }
 
 bool GMainWindow::ShowExceptionDialog(Core::System::ResultStatus result,
